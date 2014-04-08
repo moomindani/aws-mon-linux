@@ -14,7 +14,6 @@
 # permissions and limitations under the License.
 
 # TODO memory-units option
-# TODO mem-used-incl-cache-buff option
 # TODO disk-space-units option
 # TODO aggregated option
 # TODO auto-scaling option
@@ -61,6 +60,7 @@ usage()
     echo -e "\t--cpu-id\tReports cpu utilization (idle) in percentages."
     echo -e "\t--cpu-wa\tReports cpu utilization (wait) in percentages."
     echo -e "\t--cpu-st\tReports cpu utilization (steal) in percentages."
+    echo -e "\t--mem-used-incl-cache-buff\tCount memory that is cached and in buffers as used."
     echo -e "\t--mem-util\tReports memory utilization in percentages."
     echo -e "\t--mem-used\tReports memory used in megabytes."
     echo -e "\t--mem-avail\tReports available memory in megabytes."
@@ -79,14 +79,14 @@ usage()
 # Options
 ########################################
 SHORT_OPTS="h"
-LONG_OPTS="help,version,verify,verbose,debug,from-cron,aws-credential-file:,aws-access-key-id:,aws-secret-key:,load-ave1,load-ave5,load-ave15,interrupt,context-switch,cpu-us,cpu-sy,cpu-id,cpu-wa,cpu-st,mem-util,mem-used,mem-avail,swap-util,swap-used,swap-avail,disk-path:,disk-space-util,disk-space-used,disk-space-avail,all-items" 
+LONG_OPTS="help,version,verify,verbose,debug,from-cron,aws-credential-file:,aws-access-key-id:,aws-secret-key:,load-ave1,load-ave5,load-ave15,interrupt,context-switch,cpu-us,cpu-sy,cpu-id,cpu-wa,cpu-st,mem-used-incl-cache-buff,mem-util,mem-used,mem-avail,swap-util,swap-used,swap-avail,disk-path:,disk-space-util,disk-space-used,disk-space-avail,all-items" 
 
 ARGS=$(getopt -s bash --options $SHORT_OPTS --longoptions $LONG_OPTS --name $SCRIPT_NAME -- "$@" ) 
 
 VERIFY=0
 VERBOSE=0
 DEBUG=0
-FRON_CRON=0
+FROM_CRON=0
 AWS_CREDENTIAL_FILE=""
 AWS_ACCESS_KEY_ID=""
 AWS_SECRET_KEY=""
@@ -100,6 +100,7 @@ CPU_SY=0
 CPU_ID=0
 CPU_WA=0
 CPU_ST=0
+MEM_USED_INCL_CACHE_BUFF=0
 MEM_UTIL=0
 MEM_USED=0
 MEM_AVAIL=0
@@ -180,6 +181,9 @@ while true; do
             CPU_ST=1
             ;;
         # Memory
+        --mem-used-incl-cache-buff)
+            MEM_USED_INCL_CACHE_BUFF=1
+            ;;
         --mem-util)
             MEM_UTIL=1  
             ;;
@@ -406,6 +410,9 @@ mem_free=`getMemInfo "MemFree"`
 mem_cached=`getMemInfo "Cached"`
 mem_buffers=`getMemInfo "Buffers"`
 mem_avail=$mem_free
+if [ $MEM_USED_INCL_CACHE_BUFF -eq 1 ]; then
+    mem_avail=`expr $mem_avail + $mem_cached + $mem_buffers`
+fi
 mem_used=`expr $mem_total - $mem_avail`
 swap_total=`getMemInfo "SwapTotal"`
 swap_free=`getMemInfo "SwapFree"`
