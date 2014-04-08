@@ -15,7 +15,6 @@
 
 # TODO memory-units option
 # TODO mem-used-incl-cache-buff option
-# TODO from-cron option
 # TODO disk-space-units option
 # TODO aggregated option
 # TODO auto-scaling option
@@ -48,6 +47,7 @@ usage()
     echo -e "\t--verify\tChecks configuration and prepares a remote call."
     echo -e "\t--verbose\tDisplays details of what the script is doing."
     echo -e "\t--debug\tDisplays information for debugging."
+    echo -e "\t--from-cron\tUse this option when calling the script from cron."
     echo -e "\t--aws-credential-file PATH\tProvides the location of the file containing AWS credentials. This parameter cannot be used with the --aws-access-key-id and --aws-secret-key parameters."
     echo -e "\t--aws-access-key-id VALUE\tSpecifies the AWS access key ID to use to identify the caller. Must be used together with the --aws-secret-key option. Do not use this option with the --aws-credential-file parameter."
     echo -e "\t--aws-secret-key VALUE\tSpecifies the AWS secret access key to use to sign the request to CloudWatch. Must be used together with the --aws-access-key-id option. Do not use this option with --aws-credential-file parameter."
@@ -79,13 +79,14 @@ usage()
 # Options
 ########################################
 SHORT_OPTS="h"
-LONG_OPTS="help,version,verify,verbose,debug,aws-credential-file:,aws-access-key-id:,aws-secret-key:,load-ave1,load-ave5,load-ave15,interrupt,context-switch,cpu-us,cpu-sy,cpu-id,cpu-wa,cpu-st,mem-util,mem-used,mem-avail,swap-util,swap-used,swap-avail,disk-path:,disk-space-util,disk-space-used,disk-space-avail,all-items" 
+LONG_OPTS="help,version,verify,verbose,debug,from-cron,aws-credential-file:,aws-access-key-id:,aws-secret-key:,load-ave1,load-ave5,load-ave15,interrupt,context-switch,cpu-us,cpu-sy,cpu-id,cpu-wa,cpu-st,mem-util,mem-used,mem-avail,swap-util,swap-used,swap-avail,disk-path:,disk-space-util,disk-space-used,disk-space-avail,all-items" 
 
 ARGS=$(getopt -s bash --options $SHORT_OPTS --longoptions $LONG_OPTS --name $SCRIPT_NAME -- "$@" ) 
 
 VERIFY=0
 VERBOSE=0
 DEBUG=0
+FRON_CRON=0
 AWS_CREDENTIAL_FILE=""
 AWS_ACCESS_KEY_ID=""
 AWS_SECRET_KEY=""
@@ -129,6 +130,9 @@ while true; do
             ;;
         --debug)
             DEBUG=1
+            ;;
+        --from-cron)
+            FROM_CRON=1
             ;;
         # Credential
         --aws-credential-file)
@@ -265,15 +269,17 @@ function getMemInfo()
 # Main
 ########################################
 
+# Avoid a storm of calls at the beginning of a minute
+if [ $FROM_CRON -eq 1 ]; then
+    sleep $(((RANDOM%20) + 1))
+fi
+
 # CloudWatch Command Line Interface Option
 CLOUDWATCH_OPTS="--namespace \"System/Detail/Linux\" --dimensions \"InstanceId=$instanceid\""
 if [ -n "$AWS_CREDENTIAL_FILE" ]; then
     CLOUDWATCH_OPTS="$CLOUDWATCH_OPTS --aws-credential-file $AWS_CREDENTIAL_FILE"
 elif [ -n "$AWS_ACCESS_KEY_ID" -a -n "$AWS_SECRET_KEY" ]; then
     CLOUDWATCH_OPTS="$CLOUDWATCH_OPTS --access-key-id $AWS_ACCESS_KEY_ID --secret-key $AWS_SECRET_KEY"
-else
-    echo "No Credentials were provided."
-    exit 1
 fi
 
 # Command Output
