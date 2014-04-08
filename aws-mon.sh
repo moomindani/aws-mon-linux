@@ -13,10 +13,6 @@
 # express or implied. See the License for the specific language governing 
 # permissions and limitations under the License.
 
-# TODO aws-credential-file option
-# TODO aws-access-key-id option
-# TODO aws-secret-key option
-# TODO aws-iam-role option
 # TODO memory-units option
 # TODO mem-used-incl-cache-buff option
 # TODO from-cron option
@@ -34,7 +30,6 @@ SCRIPT_NAME=${0##*/}
 SCRIPT_VERSION=1.0 
 
 export AWS_CLOUDWATCH_HOME=/opt/aws/apitools/mon
-export AWS_CREDENTIAL_FILE=/root/awscreds
 instanceid=`wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`
 azone=`wget -q -O - http://169.254.169.254/latest/meta-data/placement/availability-zone`
 region=${azone/%?/}
@@ -52,6 +47,10 @@ usage()
     echo -e "\t--version\tDisplays the version number."
     echo -e "\t--verify\tChecks configuration and prepares a remote call."
     echo -e "\t--verbose\tDisplays details of what the script is doing."
+    echo -e "\t--debug\tDisplays information for debugging."
+    echo -e "\t--aws-credential-file PATH\tProvides the location of the file containing AWS credentials. This parameter cannot be used with the --aws-access-key-id and --aws-secret-key parameters."
+    echo -e "\t--aws-access-key-id VALUE\tSpecifies the AWS access key ID to use to identify the caller. Must be used together with the --aws-secret-key option. Do not use this option with the --aws-credential-file parameter."
+    echo -e "\t--aws-secret-key VALUE\tSpecifies the AWS secret access key to use to sign the request to CloudWatch. Must be used together with the --aws-access-key-id option. Do not use this option with --aws-credential-file parameter."
     echo -e "\t--load-ave1\tReports load average for 1 minute in counts."
     echo -e "\t--load-ave5\tReports load average for 5 minutes in counts."
     echo -e "\t--load-ave15\tReports load average for 15 minutes in counts."
@@ -72,6 +71,7 @@ usage()
     echo -e "\t--disk-space-util\tReports disk space utilization in percentages."
     echo -e "\t--disk-space-used\tReports allocated disk space in gigabytes."
     echo -e "\t--disk-space-avail\tReports available disk space in gigabytes."
+    echo -e "\t--all-items\tReports all items."
 }
 
 
@@ -79,13 +79,16 @@ usage()
 # Options
 ########################################
 SHORT_OPTS="h"
-LONG_OPTS="help,version,verify,verbose,debug,load-ave1,load-ave5,load-ave15,interrupt,context-switch,cpu-us,cpu-sy,cpu-id,cpu-wa,cpu-st,mem-util,mem-used,mem-avail,swap-util,swap-used,swap-avail,disk-path:,disk-space-util,disk-space-used,disk-space-avail" 
+LONG_OPTS="help,version,verify,verbose,debug,aws-credential-file:,aws-access-key-id:,aws-secret-key:,load-ave1,load-ave5,load-ave15,interrupt,context-switch,cpu-us,cpu-sy,cpu-id,cpu-wa,cpu-st,mem-util,mem-used,mem-avail,swap-util,swap-used,swap-avail,disk-path:,disk-space-util,disk-space-used,disk-space-avail,all-items" 
 
 ARGS=$(getopt -s bash --options $SHORT_OPTS --longoptions $LONG_OPTS --name $SCRIPT_NAME -- "$@" ) 
 
 VERIFY=0
 VERBOSE=0
 DEBUG=0
+AWS_CREDENTIAL_FILE=""
+AWS_ACCESS_KEY_ID=""
+AWS_SECRET_KEY=""
 LOAD_AVE1=0
 LOAD_AVE5=0
 LOAD_AVE15=0
@@ -127,6 +130,19 @@ while true; do
         --debug)
             DEBUG=1
             ;;
+        # Credential
+        --aws-credential-file)
+            shift
+            AWS_CREDENTIAL_FILE=$1
+            ;;
+        --aws-access-key-id)
+            shift
+            AWS_ACCESS_KEY_ID=$1
+            ;;
+        --aws-secret-key)
+            shift
+            AWS_SECRET_KEY=$1
+            ;;
         # System
         --load-ave1)
             LOAD_AVE1=1
@@ -164,7 +180,7 @@ while true; do
             MEM_UTIL=1  
             ;;
         --mem-used) 
-            MEM_1USED=1 
+            MEM_USED=1 
             ;;
         --mem-avail) 
             MEM_AVAIL=1 
@@ -190,6 +206,27 @@ while true; do
             DISK_SPACE_USED=1
             ;;
         --disk-space-avail)
+            DISK_SPACE_AVAIL=1
+            ;;
+        --all-items)
+            LOAD_AVE1=1
+            LOAD_AVE5=1
+            LOAD_AVE15=1
+            INTERRUPT=1
+            CONTEXT_SWITCH=1
+            CPU_US=1
+            CPU_SY=1
+            CPU_ID=1
+            CPU_WA=1
+            CPU_ST=1
+            MEM_UTIL=1
+            MEM_USED=1
+            MEM_AVAIL=1
+            SWAP_UTIL=1
+            SWAP_USED=1
+            SWAP_AVAIL=1
+            DISK_SPACE_UTIL=1
+            DISK_SPACE_USED=1
             DISK_SPACE_AVAIL=1
             ;;
         --) 
@@ -228,6 +265,17 @@ function getMemInfo()
 # Main
 ########################################
 
+# CloudWatch Command Line Interface Option
+CLOUDWATCH_OPTS="--namespace \"System/Detail/Linux\" --dimensions \"InstanceId=$instanceid\""
+if [ -n "$AWS_CREDENTIAL_FILE" ]; then
+    CLOUDWATCH_OPTS="$CLOUDWATCH_OPTS --aws-credential-file $AWS_CREDENTIAL_FILE"
+elif [ -n "$AWS_ACCESS_KEY_ID" -a -n "$AWS_SECRET_KEY" ]; then
+    CLOUDWATCH_OPTS="$CLOUDWATCH_OPTS --access-key-id $AWS_ACCESS_KEY_ID --secret-key $AWS_SECRET_KEY"
+else
+    echo "No Credentials were provided."
+    exit 1
+fi
+
 # Command Output
 if [ $DEBUG -eq 1 ]; then
     echo "-----uptime-----"
@@ -249,7 +297,7 @@ if [ $LOAD_AVE1 -eq 1 ]; then
         echo "loadave1:$loadave1"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "LoadAverage1Min" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$loadave1" --unit "Count"
+        /opt/aws/bin/mon-put-data --metric-name "LoadAverage1Min" --value "$loadave1" --unit "Count" $CLOUDWATCH_OPTS 
     fi
 fi
 
@@ -259,7 +307,7 @@ if [ $LOAD_AVE5 -eq 1 ]; then
         echo "loadave5:$loadave5"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "LoadAverage5Min" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$loadave5" --unit "Count"
+        /opt/aws/bin/mon-put-data --metric-name "LoadAverage5Min" --value "$loadave5" --unit "Count" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -269,7 +317,7 @@ if [ $LOAD_AVE15 -eq 1 ]; then
         echo "loadave15:$loadave15"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "LoadAverage15Min" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$loadave15" --unit "Count"
+        /opt/aws/bin/mon-put-data --metric-name "LoadAverage15Min" --value "$loadave15" --unit "Count" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -280,7 +328,7 @@ if [ $CONTEXT_SWITCH -eq 1 ]; then
         echo "context_switch:$context_switch"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "ContextSwitch" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$context_switch" --unit "Count"
+        /opt/aws/bin/mon-put-data --metric-name "ContextSwitch" --value "$context_switch" --unit "Count" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -291,7 +339,7 @@ if [ $INTERRUPT -eq 1 ]; then
         echo "interrupt:$interrupt"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "Interrupt" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$interrupt" --unit "Count"
+        /opt/aws/bin/mon-put-data --metric-name "Interrupt" --value "$interrupt" --unit "Count" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -302,7 +350,7 @@ if [ $CPU_US -eq 1 ]; then
         echo "cpu_us:$cpu_us"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "CpuUser" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$cpu_us" --unit "Percent"
+        /opt/aws/bin/mon-put-data --metric-name "CpuUser" --value "$cpu_us" --unit "Percent" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -312,7 +360,7 @@ if [ $CPU_SY -eq 1 ]; then
         echo "cpu_sy:$cpu_sy"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "CpuUser" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$cpu_sy" --unit "Percent"
+        /opt/aws/bin/mon-put-data --metric-name "CpuUser" --value "$cpu_sy" --unit "Percent" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -322,7 +370,7 @@ if [ $CPU_ID -eq 1 ]; then
         echo "cpu_id:$cpu_id"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "CpuIdle" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$cpu_id" --unit "Percent"
+        /opt/aws/bin/mon-put-data --metric-name "CpuIdle" --value "$cpu_id" --unit "Percent" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -332,7 +380,7 @@ if [ $CPU_WA -eq 1 ]; then
         echo "cpu_wa:$cpu_wa"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "CpuWait" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$cpu_wa" --unit "Percent"
+        /opt/aws/bin/mon-put-data --metric-name "CpuWait" --value "$cpu_wa" --unit "Percent" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -342,7 +390,7 @@ if [ $CPU_ST -eq 1 ]; then
         echo "cpu_st:$cpu_st"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "CpuSteal" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$cpu_st" --unit "Percent"
+        /opt/aws/bin/mon-put-data --metric-name "CpuSteal" --value "$cpu_st" --unit "Percent" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -373,7 +421,7 @@ if [ $MEM_UTIL -eq 1 -a $mem_total -gt 0 ]; then
         echo "mem_util:$mem_util"
     fi
     if [ $VERIFY -eq 0 -a -n "$mem_util" ]; then
-        /opt/aws/bin/mon-put-data --metric-name "MemoryUtilization" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$mem_util" --unit "Percent"
+        /opt/aws/bin/mon-put-data --metric-name "MemoryUtilization" --value "$mem_util" --unit "Percent" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -382,7 +430,7 @@ if [ $MEM_USED -eq 1 ]; then
         echo "mem_used:$mem_used"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "MemoryUsed" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$mem_used" --unit "Kilobytes"
+        /opt/aws/bin/mon-put-data --metric-name "MemoryUsed" --value "$mem_used" --unit "Kilobytes" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -391,7 +439,7 @@ if [ $MEM_AVAIL -eq 1 ]; then
         echo "mem_avail:$mem_avail"
     fi
     if [ $VERIFY -eq 0 ]; then        
-        /opt/aws/bin/mon-put-data --metric-name "MemoryAvailable" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$mem_avail" --unit "Kilobytes"
+        /opt/aws/bin/mon-put-data --metric-name "MemoryAvailable" --value "$mem_avail" --unit "Kilobytes" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -401,7 +449,7 @@ if [ $SWAP_UTIL -eq 1 -a $swap_total -gt 0 ]; then
         echo "swap_util:$swap_util"
     fi
     if [ $VERIFY -eq 0 -a -n "$swap_util" ]; then
-        /opt/aws/bin/mon-put-data --metric-name "SwapUtilization" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$swap_util" --unit "Percent"
+        /opt/aws/bin/mon-put-data --metric-name "SwapUtilization" --value "$swap_util" --unit "Percent" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -410,7 +458,7 @@ if [ $SWAP_USED -eq 1 ]; then
         echo "swap_used:$swap_used"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "SwapUsed" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$swap_used" --unit "Kilobytes"
+        /opt/aws/bin/mon-put-data --metric-name "SwapUsed" --value "$swap_used" --unit "Kilobytes" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -419,7 +467,7 @@ if [ $SWAP_AVAIL -eq 1 ]; then
         echo "swap_avail:$swap_avail"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "SwapAvailable" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$swap_avail" --unit "Kilobytes"
+        /opt/aws/bin/mon-put-data --metric-name "SwapAvailable" --value "$swap_avail" --unit "Kilobytes" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -440,7 +488,7 @@ if [ $DISK_SPACE_UTIL -eq 1 -a $disk_total -gt 0 ]; then
         echo "disk_util:$disk_util"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "DiskSpaceUtilization" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$disk_util" --unit "Percent"
+        /opt/aws/bin/mon-put-data --metric-name "DiskSpaceUtilization" --value "$disk_util" --unit "Percent" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -449,7 +497,7 @@ if [ $DISK_SPACE_USED -eq 1 ]; then
         echo "disk_used:$disk_used"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "DiskSpaceUsed" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$disk_used" --unit "Bytes"
+        /opt/aws/bin/mon-put-data --metric-name "DiskSpaceUsed" --value "$disk_used" --unit "Bytes" $CLOUDWATCH_OPTS
     fi
 fi
 
@@ -458,7 +506,7 @@ if [ $DISK_SPACE_AVAIL -eq 1 ]; then
         echo "disk_avail:$disk_avail"
     fi
     if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "DiskSpaceAvailable" --namespace "System/Detail/Linux" --dimensions "InstanceId=$instanceid" --value "$disk_avail" --unit "Bytes"
+        /opt/aws/bin/mon-put-data --metric-name "DiskSpaceAvailable" --value "$disk_avail" --unit "Bytes" $CLOUDWATCH_OPTS
     fi
 fi
 
