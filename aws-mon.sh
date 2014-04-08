@@ -20,6 +20,7 @@
 SCRIPT_NAME=${0##*/} 
 SCRIPT_VERSION=1.0 
 
+export JAVA_HOME=/usr/lib/jvm/jre
 export AWS_CLOUDWATCH_HOME=/opt/aws/apitools/mon
 instanceid=`wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`
 azone=`wget -q -O - http://169.254.169.254/latest/meta-data/placement/availability-zone`
