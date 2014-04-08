@@ -17,7 +17,6 @@
 # TODO disk-space-units option
 # TODO aggregated option
 # TODO auto-scaling option
-# TODO disk-path input validation
 
 # Requirement: yum install sysstat
 
@@ -495,7 +494,7 @@ if [ $DEBUG -eq 1 ]; then
     echo "DiskAvailable:$disk_avail"
 fi
 
-if [ $DISK_SPACE_UTIL -eq 1 -a $disk_total -gt 0 ]; then
+if [ $DISK_SPACE_UTIL -eq 1 -a -n "$DISK_PATH" -a $disk_total -gt 0 ]; then
     disk_util=`expr 100 \* $disk_used / $disk_total`
     if [ $VERBOSE -eq 1 ]; then
         echo "disk_util:$disk_util"
@@ -505,7 +504,7 @@ if [ $DISK_SPACE_UTIL -eq 1 -a $disk_total -gt 0 ]; then
     fi
 fi
 
-if [ $DISK_SPACE_USED -eq 1 ]; then
+if [ $DISK_SPACE_USED -eq 1 -a -n "$DISK_PATH" ]; then
     if [ $VERBOSE -eq 1 ]; then
         echo "disk_used:$disk_used"
     fi
@@ -514,7 +513,7 @@ if [ $DISK_SPACE_USED -eq 1 ]; then
     fi
 fi
 
-if [ $DISK_SPACE_AVAIL -eq 1 ]; then
+if [ $DISK_SPACE_AVAIL -eq 1 -a -n "$DISK_PATH" ]; then
     if [ $VERBOSE -eq 1 ]; then
         echo "disk_avail:$disk_avail"
     fi
