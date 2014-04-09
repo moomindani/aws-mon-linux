@@ -269,9 +269,10 @@ done
 ########################################
 # Command Output
 ########################################
+
+loadavg_output=`/usr/bin/cat /proc/loadavg`
 vmstat_output=`/usr/bin/vmstat`
 meminfo_output=`/bin/cat /proc/meminfo`
-uptime_output=`/usr/bin/uptime`
 df_output=`/bin/df -k -l -P $DISK_PATH`
 
 
@@ -340,8 +341,8 @@ fi
 
 # Command Output
 if [ $DEBUG -eq 1 ]; then
-    echo "-----uptime-----"
-    echo "$uptime_output"
+    echo "-----loadavg-----"
+    echo "$loadavg_output"
     echo "-----vmstat-----"
     echo "$vmstat_output"
     echo "-----/proc/meminfo-----"
@@ -352,7 +353,7 @@ fi
 
 # Load Average
 if [ $LOAD_AVE1 -eq 1 ]; then
-    loadave1=`echo $uptime_output | tr -s ' ' | cut -d ' ' -f 10 | cut -d ',' -f 1`
+    loadave1=`echo $loadavg_output | tr -s ' ' | cut -d ' ' -f 1`
     if [ $VERBOSE -eq 1 ]; then
         echo "loadave1:$loadave1"
     fi
@@ -362,7 +363,7 @@ if [ $LOAD_AVE1 -eq 1 ]; then
 fi
 
 if [ $LOAD_AVE5 -eq 1 ]; then
-    loadave5=`echo $uptime_output | tr -s ' ' | cut -d ' ' -f 11 | cut -d ',' -f 1`
+    loadave5=`echo $loadavg_output | tr -s ' ' | cut -d ' ' -f 2`
     if [ $VERBOSE -eq 1 ]; then
         echo "loadave5:$loadave5"
     fi
@@ -372,7 +373,7 @@ if [ $LOAD_AVE5 -eq 1 ]; then
 fi
 
 if [ $LOAD_AVE15 -eq 1 ]; then
-    loadave15=`echo $uptime_output | tr -s ' ' | cut -d ' ' -f 12 | cut -d ',' -f 1`
+    loadave15=`echo $loadavg_output | tr -s ' ' | cut -d ' ' -f 3`
     if [ $VERBOSE -eq 1 ]; then
         echo "loadave15:$loadave15"
     fi
