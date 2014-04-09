@@ -32,7 +32,7 @@ This script requires [Amazon CloudWatch Command Line Tool](http://aws.amazon.com
 Instances that you launch using the Amazon Linux AMI already include the CLI tools.
 
 
-### RHEL, Ubuntu, SuSE
+### RHEL, Ubuntu
 
 #### RHEL
 
@@ -59,7 +59,7 @@ export JAVA_HOME=/usr/lib/jvm/default-java/
 ```
 
 
-### Common
+### RHEL, Ubuntu
 
 You can install [Amazon CloudWatch Command Line Tool](http://aws.amazon.com/developertools/2534) with following steps:
 
