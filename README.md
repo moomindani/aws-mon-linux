@@ -7,7 +7,6 @@ This script is intended for use with Amazon EC2 instances running Linux operatin
 * Amazon Linux 2014.3
 * Red Hat Enterprise Linux 6.4
 * Ubuntu Server 13.10
-* SuSE Linux Enterprise Server 11 sp3
 
 This script is written in Bash and does not need any libraries.
 
@@ -32,7 +31,35 @@ This script requires [Amazon CloudWatch Command Line Tool](http://aws.amazon.com
 
 Instances that you launch using the Amazon Linux AMI already include the CLI tools.
 
+
 ### RHEL, Ubuntu, SuSE
+
+#### RHEL
+
+Install git.
+
+```
+yum install git
+```
+
+### Ubuntu
+
+Install git, unzip and jre.
+
+```
+apt-get install git
+apt-get install unzip
+apt-get install default-jre
+```
+
+In order to set correct JAVA_HOME, you have to edit aws-mon.sh as follows:
+
+```
+export JAVA_HOME=/usr/lib/jvm/default-java/
+```
+
+
+### Common
 
 You can install [Amazon CloudWatch Command Line Tool](http://aws.amazon.com/developertools/2534) with following steps:
 
