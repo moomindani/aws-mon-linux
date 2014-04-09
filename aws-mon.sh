@@ -270,7 +270,7 @@ done
 # Command Output
 ########################################
 
-loadavg_output=`/usr/bin/cat /proc/loadavg`
+loadavg_output=`/bin/cat /proc/loadavg`
 vmstat_output=`/usr/bin/vmstat`
 meminfo_output=`/bin/cat /proc/meminfo`
 df_output=`/bin/df -k -l -P $DISK_PATH`
