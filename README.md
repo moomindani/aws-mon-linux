@@ -42,7 +42,7 @@ Install git.
 yum install git
 ```
 
-### Ubuntu
+#### Ubuntu
 
 Install git, unzip and jre.
 
@@ -59,7 +59,7 @@ export JAVA_HOME=/usr/lib/jvm/default-java/
 ```
 
 
-### RHEL, Ubuntu
+#### RHEL, Ubuntu
 
 You can install [Amazon CloudWatch Command Line Tool](http://aws.amazon.com/developertools/2534) with following steps:
 
