@@ -446,11 +446,13 @@ fi
 
 if [ $CPU_ST -eq 1 ]; then
     cpu_st=`echo "$vmstat_output" | tail -1 | tr -s ' ' | cut -d ' ' -f 18`
-    if [ $VERBOSE -eq 1 ]; then
-        echo "cpu_st:$cpu_st"
-    fi
-    if [ $VERIFY -eq 0 ]; then
-        /opt/aws/bin/mon-put-data --metric-name "CpuSteal" --value "$cpu_st" --unit "Percent" $CLOUDWATCH_OPTS
+    if [ -n "$cpu_st" ]; then
+        if [ $VERBOSE -eq 1 ]; then
+            echo "cpu_st:$cpu_st"
+        fi
+        if [ $VERIFY -eq 0 ]; then
+            /opt/aws/bin/mon-put-data --metric-name "CpuSteal" --value "$cpu_st" --unit "Percent" $CLOUDWATCH_OPTS
+        fi
     fi
 fi
 
