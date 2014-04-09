@@ -269,7 +269,6 @@ done
 ########################################
 # Command Output
 ########################################
-
 loadavg_output=`/bin/cat /proc/loadavg`
 vmstat_output=`/usr/bin/vmstat`
 meminfo_output=`/bin/cat /proc/meminfo`
