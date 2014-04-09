@@ -28,18 +28,24 @@ This script can report the following metrics:
 
 This script requires [Amazon CloudWatch Command Line Tool](http://aws.amazon.com/developertools/2534).
 
-NOTE: Amazon Linux already includes the Amazon EC2 CLI tools
+### Amazon Linux
+
+Instances that you launch using the Amazon Linux AMI already include the CLI tools.
+
+### RHEL, Ubuntu, SuSE
+
+You can install [Amazon CloudWatch Command Line Tool](http://aws.amazon.com/developertools/2534) with following steps:
 
 ```
-# wget http://ec2-downloads.s3.amazonaws.com/CloudWatch-2010-08-01.zip
-# unzip CloudWatch-2010-08-01.zip
-# mkdir -p /opt/aws/apitools/
-# mv CloudWatch-1.0.20.0 /opt/aws/apitools/mon-1.0.20.0
-# cd /opt/aws/apitools
-# ln -s mon-1.0.20.0 mon
-# mkdir /opt/aws/bin
-# cd /opt/aws/bin
-# ln -s /opt/aws/apitools/mon-1.0.20.0/bin/mon-put-data mon-put-data
+wget http://ec2-downloads.s3.amazonaws.com/CloudWatch-2010-08-01.zip
+unzip CloudWatch-2010-08-01.zip
+mkdir -p /opt/aws/apitools/
+mv CloudWatch-1.0.20.0 /opt/aws/apitools/mon-1.0.20.0
+cd /opt/aws/apitools
+ln -s mon-1.0.20.0 mon
+mkdir /opt/aws/bin
+cd /opt/aws/bin
+ln -s /opt/aws/apitools/mon-1.0.20.0/bin/mon-put-data mon-put-data
 ```
 
 
@@ -48,9 +54,9 @@ NOTE: Amazon Linux already includes the Amazon EC2 CLI tools
 Download "mon-aws.sh" or clone repository using following steps: 
 
 ```
-# git clone https://github.com/moomindani/aws-mon-linux.git
-# cd aws-mon-linux
-# ./aws-mon.sh --help
+git clone https://github.com/moomindani/aws-mon-linux.git
+cd aws-mon-linux
+./aws-mon.sh --help
 ```
 
 ## Using the Script
@@ -104,7 +110,7 @@ The following examples assume that you have already updated the awscreds.conf fi
 * Run the following command:
 
 ```
-# ./aws-mon.sh --mem-util --verify --verbose
+./aws-mon.sh --mem-util --verify --verbose
 ```
 
 #### To collect all available memory metrics and send them to CloudWatch
@@ -112,7 +118,7 @@ The following examples assume that you have already updated the awscreds.conf fi
 * Run the following command:
 
 ```
-# ./aws-mon.sh --mem-util --mem-used --mem-avail
+./aws-mon.sh --mem-util --mem-used --mem-avail
 ```
 
 #### To set a cron schedule for metrics reported to CloudWatch
@@ -120,7 +126,7 @@ The following examples assume that you have already updated the awscreds.conf fi
 1. Start editing the crontab using the following command:
 
 ```
-# crontab -e
+crontab -e
 ```
 
 2. Add the following command to report memory and disk space utilization to CloudWatch every five minutes:
