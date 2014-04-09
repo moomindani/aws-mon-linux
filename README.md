@@ -28,7 +28,13 @@ This script can report the following metrics:
 
 This script requires [Amazon CloudWatch Command Line Tool](http://aws.amazon.com/developertools/2534).
 
-NOTE: Amazon Linux already includes the Amazon EC2 CLI tools
+### Amazon Linux
+
+Instances that you launch using the Amazon Linux AMI already include the CLI tools.
+
+### RHEL, Ubuntu, SuSE
+
+You can install [Amazon CloudWatch Command Line Tool](http://aws.amazon.com/developertools/2534) with following steps:
 
 ```
 wget http://ec2-downloads.s3.amazonaws.com/CloudWatch-2010-08-01.zip
