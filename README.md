@@ -8,7 +8,8 @@ This script is intended for use with Amazon EC2 instances running Linux operatin
 * Red Hat Enterprise Linux 6.4
 * Ubuntu Server 13.10
 
-This script is written in Bash and does not need any libraries.
+The script is written in simple Bash, so you can use it very easily. 
+The script is almost compatible with [Amazon CloudWatch Monitoring Scripts for Linux](http://aws.amazon.com/code/8720044071969977), so you can use almost same options. 
 
 
 ## Metrics of This Script
