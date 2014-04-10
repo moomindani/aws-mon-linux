@@ -162,8 +162,8 @@ The following examples assume that you have already updated the awscreds.conf fi
 crontab -e
 ```
 
-2. Add the following command to report memory and disk space utilization to CloudWatch every five minutes:
+2. Add the following command to report all items to CloudWatch every five minutes:
 
 ```
-*/5 * * * * ~/aws-mon.sh --mem-util --disk-space-util --disk-path=/ --from-cron
+*/5 * * * *  ~/aws-mon-linux/aws-mon.sh --aws-credential-file ~/awscreds --all-items --disk-path=/ --from-cron
 ```
