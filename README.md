@@ -31,6 +31,12 @@ This script requires [Amazon CloudWatch Command Line Tool](http://aws.amazon.com
 
 Instances that you launch using the Amazon Linux AMI already include the CLI tools.
 
+All you have to do is to install git.
+
+```
+yum install git
+```
+
 
 ### RHEL, Ubuntu
 
