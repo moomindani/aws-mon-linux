@@ -147,12 +147,36 @@ The following examples assume that you have already updated the awscreds.conf fi
 ./aws-mon.sh --mem-util --verify --verbose
 ```
 
+#### To collect all available cpu metrics and send them to CloudWatch
+
+* Run the following command:
+
+```
+./aws-mon.sh --cpu-us --cpu-sy --cpu-id --cpu-wa --cpu-st
+```
+
 #### To collect all available memory metrics and send them to CloudWatch
 
 * Run the following command:
 
 ```
 ./aws-mon.sh --mem-util --mem-used --mem-avail
+```
+
+#### To collect all available disk metrics and send them to CloudWatch
+
+* Run the following command:
+
+```
+./aws-mon.sh --disk-space-util --disk-space-used --disk-space-avail --disk-path /
+```
+
+#### To collect all load average metrics and send them to CloudWatch
+
+* Run the following command:
+
+```
+./aws-mon.sh --load-ave1 --load-ave5 --load-ave15
 ```
 
 #### To set a cron schedule for metrics reported to CloudWatch
