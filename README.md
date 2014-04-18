@@ -85,7 +85,7 @@ ln -s /opt/aws/apitools/mon-1.0.20.0/bin/mon-put-data mon-put-data
 
 ## Getting Started
 
-Download "mon-aws.sh" or clone repository using following steps: 
+Download "aws-mon.sh" or clone repository using following steps: 
 
 ```
 git clone https://github.com/moomindani/aws-mon-linux.git
