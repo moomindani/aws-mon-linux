@@ -59,12 +59,6 @@ apt-get install unzip
 apt-get install default-jre
 ```
 
-In order to set correct JAVA_HOME, you have to edit aws-mon.sh as follows:
-
-```
-export JAVA_HOME=/usr/lib/jvm/default-java/
-```
-
 
 #### RHEL, Ubuntu
 
