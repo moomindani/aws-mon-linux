@@ -26,7 +26,7 @@ This script can report the following metrics:
 
 ## Prerequisites
 
-This script requires [Amazon CloudWatch Command Line Tool](http://aws.amazon.com/developertools/2534).
+This script requires [AWS Command Line Interface](http://aws.amazon.com/cli/).
 
 ### Amazon Linux
 
@@ -68,18 +68,10 @@ export JAVA_HOME=/usr/lib/jvm/default-java/
 
 #### RHEL, Ubuntu
 
-You can install [Amazon CloudWatch Command Line Tool](http://aws.amazon.com/developertools/2534) with following steps:
+You can install [AWS Command Line Interface](http://aws.amazon.com/cli/) with following steps:
 
 ```
-wget http://ec2-downloads.s3.amazonaws.com/CloudWatch-2010-08-01.zip
-unzip CloudWatch-2010-08-01.zip
-mkdir -p /opt/aws/apitools/
-mv CloudWatch-1.0.20.0 /opt/aws/apitools/mon-1.0.20.0
-cd /opt/aws/apitools
-ln -s mon-1.0.20.0 mon
-mkdir /opt/aws/bin
-cd /opt/aws/bin
-ln -s /opt/aws/apitools/mon-1.0.20.0/bin/mon-put-data mon-put-data
+pip install awscli
 ```
 
 
@@ -107,9 +99,7 @@ Name                       | Description
 --verbose                  | Displays details of what the script is doing.
 --debug                    | Displays information for debugging.
 --from-cron                | Use this option when calling the script from cron.
---aws-credential-file PATH | Provides the location of the file containing AWS credentials. This parameter cannot be used with the --aws-access-key-id and --aws-secret-key parameters.
---aws-access-key-id VALUE  | Specifies the AWS access key ID to use to identify the caller. Must be used together with the --aws-secret-key option. Do not use this option with the --aws-credential-file parameter.
---aws-secret-key VALUE     | Specifies the AWS secret access key to use to sign the request to CloudWatch. Must be used together with the --aws-access-key-id option. Do not use this option with --aws-credential-file parameter.
+--profile VALUE            | Use a specific profile from your credential file.
 --load-ave1                | Reports load average for 1 minute in counts.
 --load-ave5                | Reports load average for 5 minutes in counts.
 --load-ave15               | Reports load average for 15 minutes in counts.
@@ -137,7 +127,7 @@ Name                       | Description
 
 ### Examples
 
-The following examples assume that you have already updated the awscreds.conf file with valid AWS credentials. If you are not using the awscreds.conf file, provide credentials using the --aws-access-key-id and --aws-secret-key arguments.
+The following examples assume that you have already configured awscli with "aws configure". 
 
 #### To perform a simple test run without posting data to CloudWatch
 
@@ -190,5 +180,5 @@ crontab -e
 2. Add the following command to report all items to CloudWatch every five minutes:
 
 ```
-*/5 * * * *  ~/aws-mon-linux/aws-mon.sh --aws-credential-file ~/awscreds --all-items --disk-path=/ --from-cron
+*/5 * * * *  ~/aws-mon-linux/aws-mon.sh --all-items --disk-path=/ --from-cron
 ```
