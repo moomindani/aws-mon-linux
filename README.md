@@ -117,6 +117,7 @@ Name                       | Description
 --disk-space-util          | Reports disk space utilization in percentages.
 --disk-space-used          | Reports allocated disk space in gigabytes.
 --disk-space-avail         | Reports available disk space in gigabytes.
+--disk-metric-suffix       | Suffix to add to disk metrics.
 --all-items                | Reports all items.
 
 ### Examples
