@@ -329,13 +329,11 @@ if [ -n "$PROFILE" ]; then
     CLOUDWATCH_OPTS="$CLOUDWATCH_OPTS --profile $PROFILE"
 fi
 if [ -n "$asg" ] && [ $ASG_ONLY -eq 1]; then
-#if  [ $ASG_ONLY -eq 1 ]; then
-    #asg="test"
     CLOUDWATCH_OPTS="$CLOUDWATCH_OPTS --dimensions AutoScalingGroupName=$asg"
 else
-  CLOUDWATCH_OPTS="$CLOUDWATCH_OPTS --dimensions InstanceId=$instanceid"
+    CLOUDWATCH_OPTS="$CLOUDWATCH_OPTS --dimensions InstanceId=$instanceid"
 fi
-echo $CLOUDWATCH_OPTS
+
 # Command Output
 if [ $DEBUG -eq 1 ]; then
     echo "-----loadavg-----"
