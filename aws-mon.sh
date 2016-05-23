@@ -330,7 +330,7 @@ if [ -n "$PROFILE" ]; then
 fi
 if [ -n "$asg" ] && [ $ASG_ONLY -eq 1]; then
 #if  [ $ASG_ONLY -eq 1 ]; then
-    asg="test"
+    #asg="test"
     CLOUDWATCH_OPTS="$CLOUDWATCH_OPTS --dimensions AutoScalingGroupName=$asg"
 else
   CLOUDWATCH_OPTS="$CLOUDWATCH_OPTS --dimensions InstanceId=$instanceid"
