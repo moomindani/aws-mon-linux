@@ -117,6 +117,7 @@ Name                       | Description
 --disk-space-util          | Reports disk space utilization in percentages.
 --disk-space-used          | Reports allocated disk space in gigabytes.
 --disk-space-avail         | Reports available disk space in gigabytes.
+--autoscaling              | Use this option when reporting metrics for an auto-scaling group
 --all-items                | Reports all items.
 
 ### Examples
