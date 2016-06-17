@@ -82,7 +82,7 @@ usage()
 # Options
 ########################################
 SHORT_OPTS="h"
-LONG_OPTS="help,version,verify,verbose,debug,from-cron,profile:,load-ave1,load-ave5,load-ave15,interrupt,context-switch,cpu-us,cpu-sy,cpu-id,cpu-wa,cpu-st,memory-units:,mem-used-incl-cache-buff,mem-util,mem-used,mem-avail,swap-util,swap-used,swap-avail,disk-path:,disk-space-units:,disk-space-util,disk-space-used,disk-space-avail,autoscaling,ll-items" 
+LONG_OPTS="help,version,verify,verbose,debug,from-cron,profile:,load-ave1,load-ave5,load-ave15,interrupt,context-switch,cpu-us,cpu-sy,cpu-id,cpu-wa,cpu-st,memory-units:,mem-used-incl-cache-buff,mem-util,mem-used,mem-avail,swap-util,swap-used,swap-avail,disk-path:,disk-space-units:,disk-space-util,disk-space-used,disk-space-avail,autoscaling,all-items" 
 
 ARGS=$(getopt -s bash --options $SHORT_OPTS --longoptions $LONG_OPTS --name $SCRIPT_NAME -- "$@" ) 
 
