@@ -23,10 +23,12 @@ SCRIPT_VERSION=1.1
 instanceid=`wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`
 azone=`wget -q -O - http://169.254.169.254/latest/meta-data/placement/availability-zone`
 region=${azone/%?/}
+asg=`aws autoscaling describe-auto-scaling-instances --region $region --instance-ids $instanceid --query "AutoScalingInstances[*].AutoScalingGroupName" --output text`
 export EC2_REGION=$region
+export AWS_DEFAULT_REGION=$region
 
 
-########################################
+#######################################
 # Constants
 ########################################
 KILO=1024
@@ -71,6 +73,7 @@ usage()
     printf "    %-28s %s\n" "--disk-space-util" "Reports disk space utilization in percentages."
     printf "    %-28s %s\n" "--disk-space-used" "Reports allocated disk space in gigabytes."
     printf "    %-28s %s\n" "--disk-space-avail" "Reports available disk space in gigabytes."
+    printf "    %-28s %s\n" "--autoscaling" "Reports auto-scaling metrics only."
     printf "    %-28s %s\n" "--all-items" "Reports all items."
 }
 
@@ -79,7 +82,7 @@ usage()
 # Options
 ########################################
 SHORT_OPTS="h"
-LONG_OPTS="help,version,verify,verbose,debug,from-cron,profile:,load-ave1,load-ave5,load-ave15,interrupt,context-switch,cpu-us,cpu-sy,cpu-id,cpu-wa,cpu-st,memory-units:,mem-used-incl-cache-buff,mem-util,mem-used,mem-avail,swap-util,swap-used,swap-avail,disk-path:,disk-space-units:,disk-space-util,disk-space-used,disk-space-avail,all-items" 
+LONG_OPTS="help,version,verify,verbose,debug,from-cron,profile:,load-ave1,load-ave5,load-ave15,interrupt,context-switch,cpu-us,cpu-sy,cpu-id,cpu-wa,cpu-st,memory-units:,mem-used-incl-cache-buff,mem-util,mem-used,mem-avail,swap-util,swap-used,swap-avail,disk-path:,disk-space-units:,disk-space-util,disk-space-used,disk-space-avail,autoscaling,all-items" 
 
 ARGS=$(getopt -s bash --options $SHORT_OPTS --longoptions $LONG_OPTS --name $SCRIPT_NAME -- "$@" ) 
 
@@ -113,6 +116,7 @@ DISK_SPACE_UNIT_DIV=1
 DISK_SPACE_UTIL=0
 DISK_SPACE_USED=0
 DISK_SPACE_AVAIL=0
+ASG_ONLY=0
 
 eval set -- "$ARGS" 
 while true; do 
@@ -136,6 +140,9 @@ while true; do
             ;;
         --from-cron)
             FROM_CRON=1
+            ;;
+        --autoscaling)
+            ASG_ONLY=1
             ;;
         # Profile
         --profile)
@@ -317,9 +324,14 @@ if [ $FROM_CRON -eq 1 ]; then
 fi
 
 # CloudWatch Command Line Interface Option
-CLOUDWATCH_OPTS="--namespace System/Detail/Linux --dimensions InstanceId=$instanceid"
+CLOUDWATCH_OPTS="--namespace System/Linux"
 if [ -n "$PROFILE" ]; then
     CLOUDWATCH_OPTS="$CLOUDWATCH_OPTS --profile $PROFILE"
+fi
+if [ -n "$asg" ] && [ $ASG_ONLY -eq 1 ]; then
+    CLOUDWATCH_OPTS="$CLOUDWATCH_OPTS --dimensions AutoScalingGroupName=$asg"
+else
+    CLOUDWATCH_OPTS="$CLOUDWATCH_OPTS --dimensions InstanceId=$instanceid"
 fi
 
 # Command Output
